@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ryddedyret – Hold hjemmet rent</title>
+
+<style>
+:root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --primary: #4caf50;
+    --text: #1e293b;
+    --muted: #64748b;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 480px;
+    width: 100%;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    height: fit-content;
+}
+
+h1 {
+    text-align: center;
+    font-size: 1.7rem;
+}
+
+.pet-card {
+    background: #e8f5e9;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 24px;
+    transition: background 0.3s;
+}
+
+.pet-card.warning { background: #fef3c7; }
+.pet-card.danger { background: #fee2e2; }
+.pet-card.dead { background: #e2e8f0; }
+
+.pet-avatar {
+    font-size: 5rem;
+    margin: 10px 0;
+    display: inline-block;
+    animation: bounce 2s infinite;
+}
+
+.pet-card.dead .pet-avatar {
+    animation: none;
+    filter: grayscale(100%);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.pet-name {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.pet-status {
+    color: var(--muted);
+    margin: 8px 0 16px;
+}
+
+.health-bar-bg {
+    background: rgba(0,0,0,0.1);
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.health-bar-fill {
+    background: var(--primary);
+    height: 100%;
+    width: 100%;
+    transition: width 0.4s;
+}
+
+.health-text {
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.task-section h2 {
+    font-size: 1.1rem;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.task-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.task-btn:hover {
+    border-color: var(--primary);
+    background: #f0fdf4;
+}
+
+.task-btn:active {
+    transform: scale(0.98);
+}
+
+.points-badge {
+    background: var(--primary);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.custom-task {
+    display: flex;
+    gap: 8px;
+}
+
+input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
+.add-btn {
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.revive-btn {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    display: none;
+}
+
+.info-footer {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stats strong {
+    display: block;
+    font-size: 1.2rem;
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+}
+
+button:focus-visible, input:focus-visible {
+    outline: 3px solid #86efac;
+    outline-offset: 2px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🧹 Ryddedyret</h1>
+
+    <div class="stats">
+        <div>
+            <strong id="completedCount">0</strong>
+            <small>Oppgaver utført</small>
+        </div>
+        <div>
+            <strong id="totalPoints">0</strong>
+            <small>Energi samlet</small>
+        </div>
+    </div>
+
+    <div class="pet-card" id="petCard">
+
+        <div class="pet-name" id="petName">Støv-Pusen</div>
+
+        <div class="pet-avatar" id="petAvatar">🐱</div>
+
+        <div class="pet-status" id="petStatus">
+            Jeg elsker når det er ryddig her!
+        </div>
+
+        <div class="health-bar-bg">
+            <div class="health-bar-fill" id="healthFill"></div>
+        </div>
+
+        <div class="health-text" id="healthText">
+            Energi: 80 / 100
+        </div>
+
+        <button class="revive-btn" id="reviveBtn" onclick="revivePet()">
+            Start på nytt 🐱
+        </button>
+
+    </div>
+
+    <div class="task-section" id="taskSection">
+
+        <h2>🍎 Mat dyret med husarbeid:</h2>
+
+        <div class="task-list" id="taskList"></div>
+
+        <h3>Legg til egen oppgave</h3>
+
+        <div class="custom-task">
+            <input
+                type="text"
+                id="newTaskInput"
+                placeholder="Hva skal ryddes?"
+                maxlength="60"
+            >
+
+            <button class="add-btn" onclick="addCustomTask()">
+                Legg til
+            </button>
+        </div>
+
+    </div>
+
+    <div class="info-footer">
+        Dyret mister 1 energi per time du ikke rydder.
+        Hold det i live! ❤️
+    </div>
+
+</div>
+
+<script>
+
+// Standardoppgaver
+const defaultTasks = [
+    { name: "Rydde bort klær", points: 10 },
+    { name: "Ta oppvasken / tømme maskin", points: 15 },
+    { name: "Tørke av kjøkkenbenken", points: 10 },
+    { name: "Støvsuge gulvet", points: 25 },
+    { name: "Vaske badet", points: 30 },
+    { name: "Gå ut med søpla", points: 10 }
+];
+
+// Hent lagret data
+function loadState() {
+    try {
+        const saved = JSON.parse(localStorage.getItem("ryddedyrState"));
+
+        if (
+            saved &&
+            typeof saved.health === "number" &&
+            Array.isArray(saved.tasks)
+        ) {
+            return {
+                health: Math.max(0, Math.min(100, saved.health)),
+                lastUpdated: Number(saved.lastUpdated) || Date.now(),
+                tasks: saved.tasks,
+                completedCount: saved.completedCount || 0,
+                totalPoints: saved.totalPoints || 0
+            };
+        }
+    } catch (error) {
+        console.warn("Kunne ikke hente lagret data.");
+    }
+
+    return {
+        health: 80,
+        lastUpdated: Date.now(),
+        tasks: [...defaultTasks],
+        completedCount: 0,
+        totalPoints: 0
+    };
+}
+
+let state = loadState();
+
+// Lagre data
+function saveState() {
+    localStorage.setItem(
+        "ryddedyrState",
+        JSON.stringify(state)
+    );
+}
+
+// Oppdater energi basert på tid
+function updateHealthByTime() {
+    const now = Date.now();
+
+    const hoursPassed =
+        (now - state.lastUpdated) / 3600000;
+
+    const healthLost = Math.floor(hoursPassed);
+
+    if (healthLost > 0) {
+        state.health = Math.max(
+            0,
+            state.health - healthLost
+        );
+
+        state.lastUpdated += healthLost * 3600000;
+
+        saveState();
+    }
+}
+
+// Mat dyret
+function feedPet(points) {
+
+    if (state.health <= 0) {
+        return;
+    }
+
+    state.health = Math.min(
+        100,
+        state.health + points
+    );
+
+    state.completedCount++;
+    state.totalPoints += points;
+
+    state.lastUpdated = Date.now();
+
+    saveState();
+    render();
+}
+
+// Legg til egen oppgave
+function addCustomTask() {
+
+    const input = document.getElementById("newTaskInput");
+
+    const text = input.value.trim();
+
+    if (!text) {
+        alert("Skriv inn en oppgave først!");
+        return;
+    }
+
+    state.tasks.push({
+        name: text,
+        points: 15
+    });
+
+    input.value = "";
+
+    saveState();
+    renderTasks();
+}
+
+// Slett egen oppgave
+function deleteTask(index) {
+
+    if (!confirm("Vil du slette denne oppgaven?")) {
+        return;
+    }
+
+    state.tasks.splice(index, 1);
+
+    saveState();
+    renderTasks();
+}
+
+// Start dyret på nytt
+function revivePet() {
+
+    state.health = 80;
+    state.lastUpdated = Date.now();
+
+    saveState();
+    render();
+}
+
+// Vis alle oppgaver
+function renderTasks() {
+
+    const list = document.getElementById("taskList");
+
+    list.innerHTML = "";
+
+    state.tasks.forEach((task, index) => {
+
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.gap = "5px";
+
+        const btn = document.createElement("button");
+
+        btn.className = "task-btn";
+        btn.style.flex = "1";
+        btn.disabled = state.health <= 0;
+
+        const name = document.createElement("span");
+        name.textContent = task.name;
+
+        const badge = document.createElement("span");
+        badge.className = "points-badge";
+        badge.textContent = `+${task.points} ⚡`;
+
+        btn.appendChild(name);
+        btn.appendChild(badge);
+
+        btn.onclick = () => feedPet(task.points);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "✕";
+        deleteBtn.setAttribute("aria-label", "Slett oppgave");
+        deleteBtn.onclick = () => deleteTask(index);
+
+        row.appendChild(btn);
+        row.appendChild(deleteBtn);
+
+        list.appendChild(row);
+    });
+}
+
+// Oppdater skjermen
+function render() {
+
+    const card = document.getElementById("petCard");
+    const avatar = document.getElementById("petAvatar");
+    const status = document.getElementById("petStatus");
+    const fill = document.getElementById("healthFill");
+    const healthText = document.getElementById("healthText");
+    const reviveBtn = document.getElementById("reviveBtn");
+    const taskSection = document.getElementById("taskSection");
+
+    const health = state.health;
+
+    fill.style.width = health + "%";
+
+    healthText.innerText =
+        `Energi: ${health} / 100`;
+
+    document.getElementById("completedCount").innerText =
+        state.completedCount;
+
+    document.getElementById("totalPoints").innerText =
+        state.totalPoints;
+
+    card.className = "pet-card";
+
+    reviveBtn.style.display = "none";
+
+    taskSection.style.opacity = "1";
+    taskSection.style.pointerEvents = "auto";
+
+    if (health <= 0) {
+
+        card.classList.add("dead");
+
+        avatar.innerText = "👻";
+
+        status.innerText =
+            "Å nei! Det ble for rotete, og dyret flyttet ut...";
+
+        fill.style.background = "#94a3b8";
+
+        reviveBtn.style.display = "inline-block";
+
+        taskSection.style.opacity = "0.4";
+        taskSection.style.pointerEvents = "none";
+
+    } else if (health <= 30) {
+
+        card.classList.add("danger");
+
+        avatar.innerText = "😿";
+
+        status.innerText =
+            "Jeg er skikkelig sulten! Kan du rydde litt nå?";
+
+        fill.style.background = "var(--danger)";
+
+    } else if (health <= 60) {
+
+        card.classList.add("warning");
+
+        avatar.innerText = "🙀";
+
+        status.innerText =
+            "Begynner å bli litt rotete her nå...";
+
+        fill.style.background = "var(--warning)";
+
+    } else {
+
+        avatar.innerText = "😻";
+
+        status.innerText =
+            "Jeg elsker når det er ryddig her!";
+
+        fill.style.background = "var(--primary)";
+    }
+
+    saveState();
+}
+
+// Enter-tasten legger til oppgave
+document.getElementById("newTaskInput")
+    .addEventListener("keydown", function(event) {
+
+        if (event.key === "Enter") {
+            addCustomTask();
+        }
+    });
+
+// Automatisk oppdatering hvert minutt
+setInterval(() => {
+
+    updateHealthByTime();
+    render();
+
+}, 60000);
+
+// Start programmet
+updateHealthByTime();
+renderTasks();
+render();
+
+</script>
+
+</body>
+</html>
