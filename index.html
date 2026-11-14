@@ -356,7 +356,7 @@ function updateHealthByTime() {
     const hoursPassed =
         (now - state.lastUpdated) / 3600000;
 
-    const healthLost = Math.floor(hoursPassed) * 5;
+    const healthLost = Math.floor(hoursPassed) * 10;
 
     if (healthLost > 0) {
         state.health = Math.max(
