@@ -221,29 +221,6 @@ input {
 button:focus-visible, input:focus-visible {
     outline: 3px solid #86efac;
     outline-offset: 2px;
-} /* Dagens utfordring */
-.challenge-box {
-    background: #fffbeb;
-    border: 2px solid #fcd34d;
-    border-radius: 14px;
-    padding: 15px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.challenge-box button {
-    background: #4caf50;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.challenge-box button:disabled {
-    background: #94a3b8;
-    cursor: default;
 }
 </style>
 </head>
@@ -264,26 +241,7 @@ button:focus-visible, input:focus-visible {
             <small>Energi samlet</small>
         </div>
     </div>
-<!-- Dagens utfordring -->
-<div class="challenge-box">
 
-    <h2>🎯 Dagens utfordring</h2>
-
-    <h3 id="challengeTitle">
-        Dagens utfordring
-    </h3>
-
-    <p id="challengeDescription"></p>
-
-    <p id="challengePoints"></p>
-
-    <button
-        id="challengeButton"
-        onclick="completeChallenge()">
-        Fullfør utfordringen
-    </button>
-
-</div>
     <div class="pet-card" id="petCard">
 
         <div class="pet-name" id="petName">Støv-Pusen</div>
@@ -348,104 +306,7 @@ const defaultTasks = [
     { name: "Støvsuge gulvet", points: 25 },
     { name: "Vaske badet", points: 30 },
     { name: "Gå ut med søpla", points: 10 }
-];// Dagens utfordringer
-const dailyChallenges = [
-    {
-        title: "🧹 Rydd i 10 minutter",
-        description: "Sett på en timer og rydd i 10 minutter!",
-        points: 20
-    },
-    {
-        title: "👕 Klær på plass",
-        description: "Legg alle klær på riktig plass.",
-        points: 15
-    },
-    {
-        title: "🍽️ Oppvaskmester",
-        description: "Ta oppvasken eller tøm maskinen.",
-        points: 20
-    },
-    {
-        title: "🧹 Støvsug ett rom",
-        description: "Gi ett rom en skikkelig gulvvask eller støvsuging.",
-        points: 25
-    },
-    {
-        title: "🗑️ Søppelrunde",
-        description: "Samle søppel og ta det ut.",
-        points: 15
-    },
-    {
-        title: "✨ Skinnende kjøkken",
-        description: "Tørk over kjøkkenbenken.",
-        points: 20
-    },
-    {
-        title: "🛁 Rent bad",
-        description: "Rydd og tørk over baderommet.",
-        points: 30
-    }
 ];
-
-function getTodayDate() {
-    const date = new Date();
-    return date.getFullYear() + "-" +
-        String(date.getMonth() + 1).padStart(2, "0") + "-" +
-        String(date.getDate()).padStart(2, "0");
-}
-
-function renderChallenge() {
-    const today = getTodayDate();
-
-    const dateNumber = Number(today.replaceAll("-", ""));
-    const challenge = dailyChallenges[
-        dateNumber % dailyChallenges.length
-    ];
-
-    const completed =
-        state.challengeCompletedDate === today;
-
-    document.getElementById("challengeTitle").innerText =
-        challenge.title;
-
-    document.getElementById("challengeDescription").innerText =
-        challenge.description;
-
-    document.getElementById("challengePoints").innerText =
-        "+" + challenge.points + " ⭐ bonuspoeng";
-
-    const button = document.getElementById("challengeButton");
-
-    button.disabled = completed;
-
-    button.innerText = completed
-        ? "✅ Fullført i dag!"
-        : "Fullfør utfordringen";
-}
-
-function completeChallenge() {
-    const today = getTodayDate();
-
-    if (state.challengeCompletedDate === today) {
-        return;
-    }
-
-    const dateNumber = Number(today.replaceAll("-", ""));
-    const challenge = dailyChallenges[
-        dateNumber % dailyChallenges.length
-    ];
-
-    state.totalPoints += challenge.points;
-    state.challengeCompletedDate = today;
-
-    saveState();
-    render();
-
-    alert(
-        "🎉 Fantastisk jobbet!\n\nDu fikk " +
-        challenge.points + " bonuspoeng!"
-    );
-}
 
 // Hent lagret data
 function loadState() {
@@ -462,9 +323,7 @@ function loadState() {
                 lastUpdated: Number(saved.lastUpdated) || Date.now(),
                 tasks: saved.tasks,
                 completedCount: saved.completedCount || 0,
-                totalPoints: saved.totalPoints || 0 
-                challengeCompletedDate:
-                    saved.challengeCompletedDate || null
+                totalPoints: saved.totalPoints || 0
             };
         }
     } catch (error) {
@@ -477,7 +336,6 @@ function loadState() {
         tasks: [...defaultTasks],
         completedCount: 0,
         totalPoints: 0
-        challengeCompleteddate: null 
     };
 }
 
@@ -700,8 +558,7 @@ function render() {
             "Jeg elsker når det er ryddig her!";
 
         fill.style.background = "var(--primary)";
-    } 
-    renderChallenge();
+    }
 
     saveState();
 }
