@@ -335,7 +335,7 @@ function loadState() {
     }
 
     return {
-        health: 80,
+        health: 50,
         lastUpdated: Date.now(),
         tasks: [...defaultTasks],
         completedCount: 0,
@@ -360,7 +360,7 @@ function updateHealthByTime() {
     const hoursPassed =
         (now - state.lastUpdated) / 3600000;
 
-    const healthLost = Math.floor(hoursPassed) * 10;
+    const healthLost = Math.floor(hoursPassed) * 5;
 
     if (healthLost > 0) {
         state.health = Math.max(
@@ -434,7 +434,7 @@ function deleteTask(index) {
 // Start dyret på nytt
 function revivePet() {
 
-    state.health = 80;
+    state.health = 50;
     state.lastUpdated = Date.now();
 
     saveState();
